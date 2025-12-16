@@ -1,0 +1,13 @@
+{
+  "$schema": "https://pg-language-server.com/latest/schema.json",
+    "db": {
+    "host": "127.0.0.1",
+    "port": 5432,
+    "username": "test96",
+    "password": "test96",
+    "database": "fiidb",
+    "connTimeoutSecs": 10,
+    "allowStatementExecutionsAgainst": ["127.0.0.1/*", "localhost/*"]
+  }
+}
+

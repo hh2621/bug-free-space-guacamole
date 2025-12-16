@@ -1,8 +1,79 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
+// 1. Lấy chuỗi từ Session đã lưu trong Controller
+    string userName = Context.Session.GetString("User");
+
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+@model SampleApp.Controllers.HomeViewModel 
+
+<h2>Kiểm Tra Đăng Nhập & Quản Lý Người Dùng</h2>
+
+@* --- 1. KHU VỰC LOGIN/LOGOUT --- *@
+<h3>1. Trạng thái Đăng nhập</h3>
+@if (userName != null)
+{
+    <h4>Xin chào, @User.Identity.Name!</h4>
+    <form method="post" asp-controller="Home" asp-action="Logout">
+        <button type="submit" class="btn btn-warning">Đăng xuất</button>
+    </form>
+}
+else
+{
+    <h4>Form Đăng nhập</h4>
+    <form method="post" asp-controller="Home" asp-action="Login">
+        <input type="text" id="username" name="username" placeholder="Tên đăng nhập" required />
+        <input type="password" name="password" id="password" placeholder="Mật khẩu" required />
+        <button type="submit" class="btn btn-primary">Đăng nhập</button>
+    </form>
+}
+
+<hr />
+
+@* --- 2. KHU VỰC TẠO USER (CREATE) --- *@
+@if (User.Identity.IsAuthenticated)
+{
+    <h3>2. Thêm Người Dùng Mới (CREATE)</h3>
+    <form method="post" asp-controller="Home" asp-action="CreateUser">
+        <input type="text" name="newUserEmail" placeholder="Email" required />
+        <input type="text" name="newUserName" placeholder="Tên" required />
+        <button type="submit" class="btn btn-success">Thêm User</button>
+    </form>
+
+    <hr />
+
+    @* --- 3. KHU VỰC DANH SÁCH USER (READ, UPDATE, DELETE) --- *@
+    <h3>3. Danh sách Người Dùng (READ, UPDATE, DELETE)</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên</th>
+                <th>Email</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model.Users)
+            {
+                <tr>
+                    <td>@user.Id</td>
+                    <td>@user.Name</td>
+                    <td>@user.Email</td>
+                    <td>
+                        <button class="btn btn-info btn-sm">Sửa (Edit)</button>
+                        <form method="post" asp-controller="Home" asp-action="DeleteUser" style="display:inline;">
+                            <input type="hidden" name="userId" value="@user.Id" />
+                            <button type="submit" class="btn btn-danger btn-sm">Xóa (Delete)</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Vui lòng đăng nhập để xem và quản lý người dùng.</p>
+}
+

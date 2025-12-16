@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:latest
+    container_name: postgres_for_test
+    restart: always
+    environment:
+      POSTGRES_USER: sysadmin
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: testdb
+    ports:
+      - "5432:5432"
+    volumes:
+      # Ánh xạ thư mục chứa file SQL vào thư mục khởi tạo
+      - ./initdb.sql:/docker-entrypoint-initdb.d/initdb.sql 
+      # Có thể thêm volume để lưu trữ dữ liệu vĩnh viễn (tùy chọn)
+      - pg_data_for_test:/var/lib/postgresql
+      
+volumes:
+   pg_data_for_test:
+
