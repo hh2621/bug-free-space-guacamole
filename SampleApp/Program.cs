@@ -9,7 +9,6 @@ builder.Services.AddSession(opts =>
     opts.Cookie.HttpOnly = true; // Chỉ có Server mới đọc được Cookie Session
     opts.Cookie.IsEssential = true; // Cookie này là cần thiết
 });
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -36,3 +35,10 @@ app.MapControllerRoute(
 
 
 app.Run();
+
+// Ví dụ, nếu code của bạn là Minimal API và bạn muốn nó nằm trong namespace SampleApp:
+namespace SampleApp
+{
+    public partial class Program { }
+}
+
