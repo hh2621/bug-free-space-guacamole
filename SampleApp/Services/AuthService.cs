@@ -61,10 +61,10 @@ public class AuthService : IAuthService
         string hashedPassword = PasswordHasher.HashPassword(password);
 
         // 3. Create the User model with the HASHED password
-        var newUser = new User 
-        { 
-            EmpId = username, 
-            PasswordHash = hashedPassword 
+        var newUser = new User
+        {
+            EmpId = username,
+            PasswordHash = hashedPassword
         };
 
         // 4. Call the User Service to save the new user record
@@ -72,11 +72,6 @@ public class AuthService : IAuthService
     }
 
     public Task<bool> RegisterUserAsync(object username, object password)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<IEnumerable<Claim>?> ValidateUserAndGetClaimsAsync(object username, object password)
     {
         throw new NotImplementedException();
     }

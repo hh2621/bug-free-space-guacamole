@@ -5,7 +5,7 @@ using SampleApp.Services; // Assuming AuthService is here
 using SampleApp.ViewModels; // Assuming ViewModels are here
 using Microsoft.AspNetCore.Authentication;
 using System.Security.Claims;
-
+using SampleApp.Utils;
 // Controller responsible for handling user authentication (Login, Register, Logout)
 public class AuthController : Controller
 {
@@ -34,38 +34,68 @@ public class AuthController : Controller
     // POST: /Auth/Login
     // Processes the login request
     [HttpPost]
-    [ValidateAntiForgeryToken] // Essential security measure against CSRF attacks
-    public async Task<IActionResult> Login(LoginViewModel model)
+    public async Task<IActionResult> Login([FromForm] LoginViewModel model)
     {
         if (!ModelState.IsValid)
         {
             // Return the view with validation errors if the model is invalid
-            return View(model);
+            return new JsonResult(new
+            {
+                res = "Error",
+                Message = "Invalid request" + model.ToString()
+            });
+
         }
-
-        // Call the Service Layer to handle the core login logic
-        var userClaims = await _authService.ValidateUserAndGetClaimsAsync(model.Username, model.Password);
-
-        if (userClaims == null)
+        try
         {
-            // Authentication failed
-            ModelState.AddModelError(string.Empty, "Invalid username or password.");
-            return View(model);
+            // Call the Service Layer to handle the core login logic
+            var userClaims = await _authService.ValidateUserAndGetClaimsAsync(model.Username, model.Password);
+
+            if (userClaims == null)
+            {
+                // Authentication failed
+                return new JsonResult(new
+                {
+                    res = "Error",
+                    Message = "Invalid login user is null" + model.ToString()
+                });
+                //
+                // ModelState.AddModelError(string.Empty, "Invalid username or password.");
+                // return View(model);
+            }
+
+            // --- ASP.NET Core Authentication Flow ---
+
+            // 1. Create a ClaimsIdentity (the identity of the user)
+            var identity = new ClaimsIdentity(userClaims, "ApplicationCookie");
+
+            // 2. Create a ClaimsPrincipal
+            var principal = new ClaimsPrincipal(identity);
+
+            // 3. Sign in the user (writes the authentication cookie)
+            await HttpContext.SignInAsync("ApplicationCookie", principal);
         }
+        catch (Exception e)
+        {
+            Console.WriteLine("============================");
+            LoggerHelper.WriteRedExceptionLine(e.Message, true);
+            LoggerHelper.WriteRedExceptionLine(e.StackTrace, false);
 
-        // --- ASP.NET Core Authentication Flow ---
-
-        // 1. Create a ClaimsIdentity (the identity of the user)
-        var identity = new ClaimsIdentity(userClaims, "ApplicationCookie");
-
-        // 2. Create a ClaimsPrincipal
-        var principal = new ClaimsPrincipal(identity);
-
-        // 3. Sign in the user (writes the authentication cookie)
-        await HttpContext.SignInAsync("ApplicationCookie", principal);
-
+            Console.WriteLine("============================");
+            return new JsonResult(new
+            {
+                res = "Error",
+                Message = e.Message,
+                StackTrace = e.StackTrace
+            });
+        }
         // Redirect to the intended return URL or Home page
-        return RedirectToAction("Index", "Home");
+        return new JsonResult(new
+        {
+            res = "OK",
+            Message = ""
+        });
+        ;
     }
 
     // --- LOGOUT ACTION ---
@@ -74,7 +104,14 @@ public class AuthController : Controller
     public async Task<IActionResult> Logout()
     {
         // Sign out the user (removes the authentication cookie)
-        await HttpContext.SignOutAsync("ApplicationCookie");
+        try
+        {
+            await HttpContext.SignOutAsync("ApplicationCookie");
+        }
+        catch
+        {
+
+        }
         return RedirectToAction("Index", "Home");
     }
 

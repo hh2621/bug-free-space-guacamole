@@ -1,8 +1,19 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace SampleApp.ViewModels
 {
     public class LoginViewModel
     {
-        public string? Password { get; internal set; }
-        public string? Username { get; internal set; }
+        [Required]
+
+        public string Username { get; set; }
+        [Required]
+        public string Password { get; set; }
+
+
+        public override string ToString()
+                {
+                    return "[log] Username: " + this.Username + ", Password:" + Password;
+                }
     }
 }

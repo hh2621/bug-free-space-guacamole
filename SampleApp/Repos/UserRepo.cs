@@ -5,7 +5,6 @@ using SampleApp.Factory;
 using System.Data;
 using Dapper; // Assuming Dapper is used for micro-ORM functionalities
 
-// Repository implementation for User data access using PostgreSQL and Parameterized Queries
 public class UserRepo : IUserRepo
 {
     private readonly IDbConnectionFactory _connectionFactory;
@@ -16,16 +15,17 @@ public class UserRepo : IUserRepo
         _connectionFactory = connectionFactory;
     }
 
-    // Retrieves a user by username from the database
+    // Retrieves a user by usernam from the database
     public async Task<User> GetUserByUsernameAsync(string username)
     {
         // SQL query: SELECT necessary columns including the HASHED password
-        const string sql = "SELECT id, username, passwordhash FROM c_emp WHERE username = @Username";
+        const string sql = """SELECT emp_key as "EmpKey", emp_id as "EmpId", password_hash as "PasswordHash" FROM c_emp WHERE emp_id = @Username""";
 
         using (IDbConnection connection = _connectionFactory.CreateConnection())
         {
             // Dapper call: Uses parameterized query (@Username) to prevent SQL Injection
-            return await connection.QuerySingleOrDefaultAsync<User>(sql, new { Username = username });
+            User? user = await connection.QuerySingleOrDefaultAsync<User>(sql, new { Username = username });
+            return user;
         }
     }
 
