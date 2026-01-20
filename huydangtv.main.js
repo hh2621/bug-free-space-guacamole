@@ -1,6 +1,5 @@
 /**
  * SMART TV APP - SYMMETRICAL UI (BỐ CỤC ĐỒNG ĐỀU)
- * HUYDANGDH
  */
 
 const DEFAULT_CHANNELS = [
@@ -163,7 +162,10 @@ function playChannel(index) {
         hls = new Hls({ capLevelToPlayerSize: true });
         hls.loadSource(channels[index].url);
         hls.attachMedia(video);
-        hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+        hls.on(Hls.Events.MEDIA_ATTACHED, function () {
+          video.muted = false;
+          video.play();
+        });
 
     }
     sidebar.classList.remove('visible');
