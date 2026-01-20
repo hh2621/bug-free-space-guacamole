@@ -24,6 +24,54 @@ let hls = null;
 let video, sidebar, listContainer, digitDisplay, infoBanner, displayName;
 
 /**
+ * 1. TỰ ĐỘNG CHÈN CSS VÀO HEAD (Fix lỗi không hiện Grid)
+ */
+function injectStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; }
+        #main-player { width: 100vw; height: 100vh; background: #000; }
+        
+        /* Sidebar & Grid */
+        #sidebar { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0, 0, 0, 0.85); display: none; z-index: 100;
+            flex-direction: column; align-items: center; justify-content: center;
+        }
+        #sidebar.visible { display: flex; }
+        .menu-title { color: #fff; margin-bottom: 20px; font-size: 30px; text-shadow: 2px 2px 4px #000; }
+        
+        #channel-list { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); /* 4 cột */
+            gap: 20px; padding: 40px; width: 90%; max-height: 80vh; overflow-y: auto;
+        }
+        
+        /* Item Kênh */
+        .channel-item { 
+            background: rgba(255,255,255,0.1); color: #fff; padding: 20px; 
+            border-radius: 10px; text-align: center; border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .channel-item.focused { 
+            background: #0078ff; border-color: #fff; transform: scale(1.1); font-weight: bold;
+        }
+        
+        /* Thông báo số & Tên kênh */
+        #digit-display { 
+            position: fixed; top: 50px; right: 50px; font-size: 80px; color: #fff; 
+            background: rgba(0,0,0,0.6); padding: 10px 30px; border-radius: 15px; display: none; 
+        }
+        #channel-info { 
+            position: fixed; bottom: 50px; left: 50px; background: rgba(0,0,0,0.7); 
+            padding: 10px 40px; border-radius: 50px; color: #fff; opacity: 0; transition: 0.5s; 
+        }
+        #channel-info.show { opacity: 1; }
+    `;
+    document.head.appendChild(style);
+}
+
+/**
  * 1. DỰNG GIAO DIỆN BẰNG JS (An toàn tuyệt đối)
  */
 function buildAppUI() {
@@ -72,16 +120,16 @@ function buildAppUI() {
 async function loadChannels() {
     try {
         // Đăng ký phím Remote Samsung
-        // tizen.tvinputdevice.registerKey("0");
-        // tizen.tvinputdevice.registerKey("1");
-        // tizen.tvinputdevice.registerKey("2");
-        // tizen.tvinputdevice.registerKey("3");
-        // tizen.tvinputdevice.registerKey("4");
-        // tizen.tvinputdevice.registerKey("5");
-        // tizen.tvinputdevice.registerKey("6");
-        // tizen.tvinputdevice.registerKey("7");
-        // tizen.tvinputdevice.registerKey("8");
-        // tizen.tvinputdevice.registerKey("9");
+        tizen.tvinputdevice.registerKey("0");
+        tizen.tvinputdevice.registerKey("1");
+        tizen.tvinputdevice.registerKey("2");
+        tizen.tvinputdevice.registerKey("3");
+        tizen.tvinputdevice.registerKey("4");
+        tizen.tvinputdevice.registerKey("5");
+        tizen.tvinputdevice.registerKey("6");
+        tizen.tvinputdevice.registerKey("7");
+        tizen.tvinputdevice.registerKey("8");
+        tizen.tvinputdevice.registerKey("9");
     } catch (e) {}
 
     try {
@@ -218,6 +266,7 @@ window.addEventListener('keydown', function (e) {
  * 5. HÀM KHỞI TẠO (Được gọi từ loader.js)
  */
 function initRemoteApp() {
+    injectStyles();
     console.log("Remote App Initializing...");
     buildAppUI();
     // Đợi UI render xong mới load dữ liệu
@@ -225,6 +274,6 @@ function initRemoteApp() {
 }
 
 // Tự kích hoạt nếu chạy độc lập
-if (document.readyState === "complete") {
+window.onload = function() {
     initRemoteApp();
-}
+};
