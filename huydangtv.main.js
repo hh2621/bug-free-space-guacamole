@@ -51,10 +51,11 @@ function injectStyles() {
         .channel-item { 
             background: rgba(255,255,255,0.1); color: #fff; padding: 20px; 
             border-radius: 10px; text-align: center; border: 3px solid transparent;
-            transition: all 0.2s;
+            font-size: xx-large;
+            // transition: all 0.2s;
         }
         .channel-item.focused { 
-            background: #0078ff; border-color: #fff; transform: scale(1.1); font-weight: bold;
+            background: #1aa1ca; border-color: #fff; transform: scale(1.1); font-weight: bold; 
         }
         
         /* Thông báo số & Tên kênh */
@@ -120,16 +121,16 @@ function buildAppUI() {
 async function loadChannels() {
     try {
         // Đăng ký phím Remote Samsung
-        tizen.tvinputdevice.registerKey("0");
-        tizen.tvinputdevice.registerKey("1");
-        tizen.tvinputdevice.registerKey("2");
-        tizen.tvinputdevice.registerKey("3");
-        tizen.tvinputdevice.registerKey("4");
-        tizen.tvinputdevice.registerKey("5");
-        tizen.tvinputdevice.registerKey("6");
-        tizen.tvinputdevice.registerKey("7");
-        tizen.tvinputdevice.registerKey("8");
-        tizen.tvinputdevice.registerKey("9");
+        // tizen.tvinputdevice.registerKey("0");
+        // tizen.tvinputdevice.registerKey("1");
+        // tizen.tvinputdevice.registerKey("2");
+        // tizen.tvinputdevice.registerKey("3");
+        // tizen.tvinputdevice.registerKey("4");
+        // tizen.tvinputdevice.registerKey("5");
+        // tizen.tvinputdevice.registerKey("6");
+        // tizen.tvinputdevice.registerKey("7");
+        // tizen.tvinputdevice.registerKey("8");
+        // tizen.tvinputdevice.registerKey("9");
     } catch (e) {}
 
     try {
