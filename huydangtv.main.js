@@ -16,6 +16,35 @@ let focusIndex = 0;
 let hls = null;
 let isMoving = false;
 let video, sidebar, listContainer, infoBanner, displayName;
+let numberBuffer = ""; // Lưu các số đang bấm
+let numberTimer = null; // Đếm ngược để chuyển kênh
+
+function handleNumberInput(num) {
+    // Hiện banner thông tin để người dùng thấy số mình đang nhập
+    infoBanner.classList.add('show');
+    
+    numberBuffer += num;
+    displayName.innerText = "CHỌN KÊNH: " + numberBuffer;
+
+    // Xóa bộ đếm cũ nếu đang bấm dở
+    clearTimeout(numberTimer);
+
+    // Sau 1.5 giây không bấm thêm số nào nữa thì thực hiện chuyển kênh
+    numberTimer = setTimeout(() => {
+        const channelNum = parseInt(numberBuffer);
+        const targetIndex = channelNum - 1; // Vì mảng bắt đầu từ 0
+
+        if (targetIndex >= 0 && targetIndex < channels.length) {
+            playChannel(targetIndex);
+        } else {
+            displayName.innerText = "KÊNH " + channelNum + " KHÔNG TỒN TẠI";
+            setTimeout(() => infoBanner.classList.remove('show'), 2000);
+        }
+
+        numberBuffer = ""; // Reset bộ đệm
+    }, 1500); 
+}
+
 
 async function loadChannels() {
 
@@ -175,7 +204,16 @@ function playChannel(index) {
 window.addEventListener('keydown', (e) => {
     const COLUMNS = 4;
     const isVisible = sidebar.classList.contains('visible');
-
+      // 1. XỬ LÝ PHÍM SỐ (0-9)
+    // Mã phím từ 48-57 là hàng phím số, 96-105 là phím số bên Numpad
+    if ((e.keyCode >= 48 && e.keyCode <= 57) || (e.keyCode >= 96 && e.keyCode <= 105)) {
+        let num;
+        if (e.keyCode <= 57) num = e.keyCode - 48;
+        else num = e.keyCode - 96;
+        
+        handleNumberInput(num);
+        return;
+    }
     // Tizen Back Button
     if (e.keyCode === 10009 || e.keyCode === 27) {
         if (isVisible) sidebar.classList.remove('visible');
