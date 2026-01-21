@@ -1,5 +1,5 @@
 /**
- * SMART TV APP - SYMMETRICAL UI (BỐ CỤC ĐỒNG ĐỀU)
+ * SMART TV APP - TIZEN OS OPTIMIZED
  */
 
 const DEFAULT_CHANNELS = [
@@ -14,25 +14,29 @@ const DEFAULT_CHANNELS = [
 let channels = [];
 let focusIndex = 0;
 let hls = null;
-let isMoving = false;
 let video, sidebar, listContainer, infoBanner, displayName;
-let numberBuffer = ""; // Lưu các số đang bấm
-let numberTimer = null; // Đếm ngược để chuyển kênh
+let numberBuffer = ""; 
+let numberTimer = null;
+
+// --- TỐI ƯU CHO TIZEN: ĐĂNG KÝ PHÍM HỆ THỐNG ---
+function registerTizenKeys() {
+    if (window.tizen && tizen.tvinputdevice) {
+        const keys = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "ChannelUp", "ChannelDown"];
+        keys.forEach(key => {
+            try { tizen.tvinputdevice.registerKey(key); } catch (e) {}
+        });
+    }
+}
 
 function handleNumberInput(num) {
-    // Hiện banner thông tin để người dùng thấy số mình đang nhập
     infoBanner.classList.add('show');
-    
     numberBuffer += num;
     displayName.innerText = "CHỌN KÊNH: " + numberBuffer;
 
-    // Xóa bộ đếm cũ nếu đang bấm dở
     clearTimeout(numberTimer);
-
-    // Sau 1.5 giây không bấm thêm số nào nữa thì thực hiện chuyển kênh
     numberTimer = setTimeout(() => {
         const channelNum = parseInt(numberBuffer);
-        const targetIndex = channelNum - 1; // Vì mảng bắt đầu từ 0
+        const targetIndex = channelNum - 1;
 
         if (targetIndex >= 0 && targetIndex < channels.length) {
             playChannel(targetIndex);
@@ -40,139 +44,37 @@ function handleNumberInput(num) {
             displayName.innerText = "KÊNH " + channelNum + " KHÔNG TỒN TẠI";
             setTimeout(() => infoBanner.classList.remove('show'), 2000);
         }
-
-        numberBuffer = ""; // Reset bộ đệm
+        numberBuffer = "";
     }, 1500); 
 }
 
-
 async function loadChannels() {
-
     try {
-
         const res = await fetch("https://raw.githubusercontent.com/huydangdh/mmm/refs/heads/main/mytv.json", { cache: "no-store" });
-
         channels = await res.json();
-
-    } catch (e) { channels = DEFAULT_CHANNELS; }
-
+    } catch (e) { 
+        channels = DEFAULT_CHANNELS; 
+    }
 
     listContainer.innerHTML = channels.map((ch, i) => `
-
-<div class="channel-item" id="ch-${i}">
-
-<div class="ch-number">${i + 1}</div>
-
-<div class="ch-name">${ch.name}</div>
-
-</div>
-
-`).join('');
-
-    playChannel(parseInt(localStorage.getItem('lastChannel')) || 0);
-
-}
-
-function injectStyles() {
-    const style = document.createElement('style');
-    style.textContent = `
-        body { margin: 0; background: #000; overflow: hidden; font-family: "Segoe UI", sans-serif; }
-        #main-player { width: 100vw; height: 100vh; background: #000; }
-        
-        #sidebar { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0, 0, 0, 0.92); display: none; z-index: 100;
-            flex-direction: column; align-items: center;
-        }
-        #sidebar.visible { display: flex; }
-
-        .menu-header {
-            color: #fff; font-size: 42px; margin: 40px 0; 
-            font-weight: bold; letter-spacing: 2px;
-        }
-
-        #list-window {
-            width: 90%; height: 75vh; overflow: hidden; padding:8px;
-            position: relative; /* Tạo context riêng */
-        }
-        
-        #channel-list { 
-            display: grid; 
-            grid-template-columns: repeat(4, 1fr); 
-            gap: 20px; 
-            width: 100%; 
-            /* Tối ưu quan trọng nhất: Chuyển động bằng GPU */
-            will-change: transform;
-            transform: translate3d(0, 0, 0);
-            transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-        
-        .channel-item { 
-            background: rgba(255, 255, 255, 0.1); 
-            color: #ccc; 
-            height: 150px;
-            border-radius: 25px;
-            border: 4px solid transparent;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            box-sizing: border-box;
-            /* Hạn chế layout trashing */
-            contain: content; 
-        }
-
-        .channel-item.focused { 
-            background: #034EA2; 
-            color: #fff; 
-            border-color: #ffffff;
-            transform: scale(1.02); /* Phóng nhẹ để tạo cảm giác focus mượt */
-        }
-
-        .ch-number { font-size: xx-large; font-weight: bold; color: #0078ff; }
-        .focused .ch-number { color: #fff; }
-        .ch-name { font-size: xx-large; padding: 0 10px; text-align: center; }
-
-        #channel-info { 
-            position: fixed; bottom: 50px; left: 50%; transform: translateX(-50%);
-            background: #034EA2; padding: 15px 50px; border-radius: 50px;
-            color: #fff; display: none; z-index: 200;
-        }
-        #channel-info.show { display: block; }
-    `;
-    document.head.appendChild(style);
-}
-
-function buildAppUI() {
-    const root = document.getElementById('app-root') || document.body;
-    root.innerHTML = `
-        <video id="main-player" autoplay></video>
-        <div id="channel-info"><h1 id="display-name"></h1></div>
-        <div id="sidebar">
-            <div class="menu-header">DANH SÁCH KÊNH</div>
-            <div id="list-window"><div id="channel-list"></div></div>
+        <div class="channel-item" id="ch-${i}">
+            <div class="ch-number">${i + 1}</div>
+            <div class="ch-name">${ch.name}</div>
         </div>
-    `;
-    video = document.getElementById('main-player');
-    sidebar = document.getElementById('sidebar');
-    listContainer = document.getElementById('channel-list');
-    infoBanner = document.getElementById('channel-info');
-    displayName = document.getElementById('display-name');
+    `).join('');
+
+    const lastIdx = parseInt(localStorage.getItem('lastChannel')) || 0;
+    playChannel(lastIdx);
 }
 
 function updateFocus() {
-    // Tối ưu: Chỉ tác động lên class 'focused' cũ và mới thay vì duyệt toàn bộ danh sách
-    const prevFocused = document.querySelector('.channel-item.focused');
-    if (prevFocused) prevFocused.classList.remove('focused');
-
+    document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('focused'));
     const currentEl = document.getElementById(`ch-${focusIndex}`);
     if (currentEl) {
         currentEl.classList.add('focused');
-
-        // Tính toán vị trí cuộn
         const COLUMNS = 4;
-        const ROW_HEIGHT = 170; // Chiều cao item + gap
+        const ROW_HEIGHT = 170; 
         const currentRow = Math.floor(focusIndex / COLUMNS);
-
-        // Luôn giữ item được focus nằm ở vùng nhìn thấy (tối ưu chuyển động)
         const scrollY = currentRow * ROW_HEIGHT;
         listContainer.style.transform = `translate3d(0, -${scrollY}px, 0)`;
     }
@@ -183,70 +85,100 @@ function playChannel(index) {
     focusIndex = index;
     displayName.innerText = channels[index].name;
     infoBanner.classList.add('show');
+    
     clearTimeout(window.infoTimer);
     window.infoTimer = setTimeout(() => infoBanner.classList.remove('show'), 3000);
 
     if (hls) hls.destroy();
+    
     if (Hls.isSupported()) {
-        hls = new Hls({ capLevelToPlayerSize: true });
+        hls = new Hls();
         hls.loadSource(channels[index].url);
         hls.attachMedia(video);
-        hls.on(Hls.Events.MEDIA_ATTACHED, function () {
-          video.muted = false;
-          video.play();
-        });
-
+        hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        // Hỗ trợ Native HLS (Tizen đời mới thường hỗ trợ tốt cái này)
+        video.src = channels[index].url;
+        video.play();
     }
+    
     sidebar.classList.remove('visible');
     localStorage.setItem('lastChannel', index);
 }
 
+// --- XỬ LÝ SỰ KIỆN PHÍM TỔNG HỢP ---
 window.addEventListener('keydown', (e) => {
-    const COLUMNS = 4;
+    const key = e.keyCode || e.which;
     const isVisible = sidebar.classList.contains('visible');
-      // 1. XỬ LÝ PHÍM SỐ (0-9)
-    // Mã phím từ 48-57 là hàng phím số, 96-105 là phím số bên Numpad
-    if ((e.keyCode >= 48 && e.keyCode <= 57) || (e.keyCode >= 96 && e.keyCode <= 105)) {
-        let num;
-        if (e.keyCode <= 57) num = e.keyCode - 48;
-        else num = e.keyCode - 96;
-        
-        handleNumberInput(num);
+    const COLUMNS = 4;
+
+    // 1. Phím số (0-9)
+    if (key >= 48 && key <= 57) {
+        handleNumberInput(key - 48);
         return;
     }
-    // Tizen Back Button
-    if (e.keyCode === 10009 || e.keyCode === 27) {
-        if (isVisible) sidebar.classList.remove('visible');
-        else if (window.tizen) tizen.application.getCurrentApplication().exit();
+    if (key >= 96 && key <= 105) { // Numpad
+        handleNumberInput(key - 96);
         return;
     }
 
-    if (!isVisible) {
-        if ([37, 38, 39, 40, 13].includes(e.keyCode)) {
-            sidebar.classList.add('visible');
-            updateFocus();
+    // 2. Phím Back / Return (Tizen: 10009, Web: 27)
+    if (key === 10009 || key === 27 || e.key === "Return" || e.key === "Backspace") {
+        if (isVisible) {
+            sidebar.classList.remove('visible');
+            e.preventDefault();
+        } else if (window.tizen) {
+            tizen.application.getCurrentApplication().exit();
         }
         return;
     }
 
-    // Xử lý di chuyển
-    let newIndex = focusIndex;
-    switch (e.keyCode) {
-        case 38: if (focusIndex >= COLUMNS) newIndex -= COLUMNS; break; // Up
-        case 40: if (focusIndex + COLUMNS < channels.length) newIndex += COLUMNS; break; // Down
-        case 37: if (focusIndex > 0) newIndex--; break; // Left
-        case 39: if (focusIndex < channels.length - 1) newIndex++; break; // Right
-        case 13: playChannel(focusIndex); return; // Enter
+    // 3. Phím Enter (OK)
+    if (key === 13 || e.key === "Enter") {
+        if (!isVisible) {
+            sidebar.classList.add('visible');
+            updateFocus();
+        } else {
+            playChannel(focusIndex);
+        }
+        return;
     }
 
-    if (newIndex !== focusIndex) {
-        focusIndex = newIndex;
-        // Sử dụng requestAnimationFrame để đảm bảo mượt mà trên màn hình TV
-        requestAnimationFrame(updateFocus);
+    // 4. Phím điều hướng
+    if (!isVisible && [37, 38, 39, 40].includes(key)) {
+        sidebar.classList.add('visible');
+        updateFocus();
+        return;
+    }
+
+    if (isVisible) {
+        let newIndex = focusIndex;
+        switch (key) {
+            case 38: // Up
+                if (focusIndex >= COLUMNS) newIndex -= COLUMNS; 
+                break;
+            case 40: // Down
+                if (focusIndex + COLUMNS < channels.length) newIndex += COLUMNS; 
+                break; 
+            case 37: // Left
+                if (focusIndex > 0) newIndex--; 
+                break;
+            case 39: // Right
+                if (focusIndex < channels.length - 1) newIndex++; 
+                break;
+        }
+        if (newIndex !== focusIndex) {
+            focusIndex = newIndex;
+            requestAnimationFrame(updateFocus);
+        }
     }
 });
+
+// Giữ nguyên các hàm injectStyles, buildAppUI như cũ...
+// Thêm registerTizenKeys vào window.onload
 window.onload = function () {
     injectStyles();
     buildAppUI();
     loadChannels();
+    registerTizenKeys();
 };
