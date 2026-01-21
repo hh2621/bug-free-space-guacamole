@@ -129,9 +129,9 @@ function injectStyles() {
             transform: scale(1.02); /* Phóng nhẹ để tạo cảm giác focus mượt */
         }
 
-        .ch-number { font-size: xx-large; font-weight: bold; color: #0078ff; }
+        .ch-number { font-size: xxx-large; font-weight: bold; color: #0078ff; }
         .focused .ch-number { color: #fff; }
-        .ch-name { font-size: xx-large; padding: 0 10px; text-align: center; }
+        .ch-name { font-size: 36px; padding: 0 10px; text-align: center; }
 
         #channel-info { 
             position: fixed; bottom: 50px; left: 50%; transform: translateX(-50%);
